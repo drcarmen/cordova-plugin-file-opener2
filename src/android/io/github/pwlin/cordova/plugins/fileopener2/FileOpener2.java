@@ -67,21 +67,6 @@ public class FileOpener2 extends CordovaPlugin {
 			}
 			this._open(fileUrl, contentType, openWithDefault, callbackContext);
 		}
-		else if (action.equals("uninstall")) {
-			this._uninstall(args.getString(0), callbackContext);
-		}
-		else if (action.equals("appIsInstalled")) {
-			JSONObject successObj = new JSONObject();
-			if (this._appIsInstalled(args.getString(0))) {
-				successObj.put("status", PluginResult.Status.OK.ordinal());
-				successObj.put("message", "Installed");
-			}
-			else {
-				successObj.put("status", PluginResult.Status.NO_RESULT.ordinal());
-				successObj.put("message", "Not installed");
-			}
-			callbackContext.success(successObj);
-		}
 		else {
 			JSONObject errorObj = new JSONObject();
 			errorObj.put("status", PluginResult.Status.INVALID_ACTION.ordinal());
@@ -107,6 +92,11 @@ public class FileOpener2 extends CordovaPlugin {
 				    contentType = _getMimeType(fileName);
 				}		
 
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				Context context = cordova.getActivity().getApplicationContext();
+				Uri path = FileProvider.getUriForFile(context, cordova.getActivity().getPackageName() + ".fileOpener2.provider", file);
+				intent.setDataAndType(path, contentType);
+				intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 				/*
 				 * @see
 				 * http://stackoverflow.com/questions/14321376/open-an-activity-from-a-cordovaplugin
@@ -145,17 +135,4 @@ public class FileOpener2 extends CordovaPlugin {
 	    return mimeType;
 	}
 
-	private boolean _appIsInstalled(String packageId) {
-		PackageManager pm = cordova.getActivity().getPackageManager();
-        boolean appInstalled = false;
-        try {
-            pm.getPackageInfo(packageId, PackageManager.GET_ACTIVITIES);
-            appInstalled = true;
-        } catch (PackageManager.NameNotFoundException e) {
-            appInstalled = false;
-        }
-        return appInstalled;
-	}
-
 }
-
